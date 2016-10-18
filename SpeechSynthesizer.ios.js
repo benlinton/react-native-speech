@@ -5,7 +5,7 @@
 'use strict';
 
 var React = require('react-native');
-var { NativeModules } = React;
+var { NativeModules, NativeAppEventEmitter } = React;
 var NativeSpeechSynthesizer = NativeModules.SpeechSynthesizer;
 
 /**
@@ -14,6 +14,8 @@ var NativeSpeechSynthesizer = NativeModules.SpeechSynthesizer;
 
 var SpeechSynthesizer = {
   speak(options) {
+    this.setFinishedSubscription();
+
     return new Promise(function(resolve, reject) {
       NativeSpeechSynthesizer.speakUtterance(options, function(error, success) {
         if (error) {
@@ -73,7 +75,19 @@ var SpeechSynthesizer = {
         resolve(locales);
       });
     });
+  },
+
+  setFinishedSubscription() {
+    if (this.finishedSubscription) this.finishedSubscription.remove();
+    this.finishedSubscription = NativeAppEventEmitter.addListener('speechFinished',
+      (data) => {
+        if (this.onFinished) {
+          this.onFinished(data);
+        }
+      }
+    );
   }
+
 };
 
 module.exports = SpeechSynthesizer;

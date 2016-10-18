@@ -1,8 +1,14 @@
 #import "SpeechSynthesizer.h"
+#import "RCTBridge.h"
 #import "RCTUtils.h"
 #import "RCTLog.h"
+#import "RCTEventDispatcher.h"
+
+NSString *const SpeechEventFinished = @"speechFinished";
 
 @implementation SpeechSynthesizer
+
+@synthesize bridge = _bridge;
 
 RCT_EXPORT_MODULE()
 
@@ -116,6 +122,7 @@ RCT_EXPORT_METHOD(speechVoices:(RCTResponseSenderBlock)callback)
 {
     NSLog(@"Speech finished");
     self.synthesizer = nil;
+    [self.bridge.eventDispatcher sendAppEventWithName:SpeechEventFinished body:@{}];
 }
 
 // Started Handler
@@ -146,6 +153,7 @@ RCT_EXPORT_METHOD(speechVoices:(RCTResponseSenderBlock)callback)
 -(void)speechSynthesizer:(AVSpeechSynthesizer *)synthesizer didCancelSpeechUtterance:(AVSpeechUtterance *)utterance
 {
     NSLog(@"Speech cancelled");
+    self.synthesizer = nil;
 }
 
 @end
